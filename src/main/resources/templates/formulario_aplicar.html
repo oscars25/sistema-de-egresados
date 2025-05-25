@@ -38,7 +38,7 @@
                 <p th:text="${oferta.requisitos}"></p>
 
                 <p><strong>Fecha de Publicación:</strong></p>
-                <p th:text="${#dates.format(oferta.fechaPublicacion, 'dd/MM/yyyy')}"></p>
+                <p th:text="${#temporals.format(oferta.fechaPublicacion, 'dd/MM/yyyy')}"></p>
 
                 <p><strong>Estado:</strong></p>
                 <p th:text="${oferta.estado}"></p>

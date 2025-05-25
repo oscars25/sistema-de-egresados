@@ -143,18 +143,36 @@ public class OfertaEmpleoController {
     }
 
     @PostMapping("/aplicar/{id}")
-    public String aplicarOferta(@PathVariable Long id, @AuthenticationPrincipal OidcUser principal) {
+    public String aplicarOferta(@PathVariable Long id, 
+                               @AuthenticationPrincipal OidcUser principal, 
+                               Authentication authentication,
+                               Model model) {
         Optional<OfertaEmpleo> ofertaOpt = service.obtenerPorId(id);
         if (!ofertaOpt.isPresent()) {
             return "redirect:/ofertas";
         }
 
+        // Guardar la aplicación
         AplicacionOferta aplicacion = new AplicacionOferta();
         aplicacion.setOfertaEmpleo(ofertaOpt.get());
         aplicacion.setEmailEgresado(principal.getClaim("email"));
         aplicacion.setFechaAplicacion(LocalDate.now());
 
         aplicacionService.guardar(aplicacion);
-        return "redirect:/ofertas";
+
+        // Cargar datos para la vista detalle (formulario_aplicar.html)
+        OfertaEmpleo oferta = ofertaOpt.get();
+        model.addAttribute("oferta", oferta);
+
+        // Verificar roles para mostrar o no el botón aplicar en la vista
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::toLowerCase)
+                .toList();
+
+        boolean esEmpresaOAdmin = roles.contains("role_admin") || roles.contains("role_empresa");
+        model.addAttribute("esEmpresaOAdmin", esEmpresaOAdmin);
+
+        return "formulario_aplicar";
     }
 }

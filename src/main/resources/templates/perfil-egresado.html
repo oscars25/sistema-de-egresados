@@ -45,7 +45,7 @@
 
         <hr class="my-4" />
 
-        <h2 class="text-success mb-4">Ofertas de Empleo Disponibles</h2>
+        <h2 class="text-success mb-4 text-center">Ofertas de Empleo Disponibles</h2>
 
         <div th:if="${ofertas != null and #lists.isEmpty(ofertas) == false}">
             <div class="list-group">
@@ -56,7 +56,7 @@
                     <p><strong>Estado:</strong> <span th:text="${oferta.estado}"></span></p>
 
                     <form th:action="@{'/ofertas/aplicar/' + ${oferta.id}}" method="post">
-                        <button type="submit" class="btn btn-primary">Aplicar</button>
+                            <button type="submit" class="btn btn-primary">Aplicar</button>
                     </form>
                 </div>
             </div>
