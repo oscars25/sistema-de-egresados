@@ -10,11 +10,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.*;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 import java.time.Duration;
 
@@ -25,22 +26,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, OAuth2ResourceServerProperties properties) throws Exception {
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
-        jwtConverter.setJwtGrantedAuthoritiesConverter(new CustomRoleConverter());
+        jwtConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
 
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/auth/**", "/perfil", "/registro", "/contacto",
                         "/css/**", "/js/**", "/img/**", "/public/**", "/login").permitAll()
-                .requestMatchers("/admin/**").hasAuthority("admin")
-                .requestMatchers("/empresa/**").hasAuthority("Empresa")
-                .requestMatchers("/egresado/**").hasAuthority("Egresado")
-                .requestMatchers("/ofertas/crear", "/ofertas/editar/**", "/ofertas/eliminar/**").hasAnyAuthority("admin", "Empresa")
-                .requestMatchers("/ofertas/ver/**", "/ofertas/aplicar/**").hasAuthority("Egresado")
+                .requestMatchers("/admin/**").hasRole("admin")
+                .requestMatchers("/empresa/**").hasRole("Empresa")
+                .requestMatchers("/egresado/**").hasRole("Egresado")
+                .requestMatchers("/ofertas/crear", "/ofertas/editar/**", "/ofertas/eliminar/**").hasAnyRole("admin", "Empresa")
+                .requestMatchers("/ofertas/ver/**", "/ofertas/aplicar/**").hasRole("Egresado")
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
-                .loginPage("/login") // Página personalizada
+                .loginPage("/login")
                 .defaultSuccessUrl("/perfil", true)
                 .userInfoEndpoint(userInfo -> userInfo
                     .oidcUserService(new OidcUserService())
@@ -63,6 +64,14 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // Mapea los roles desde el claim personalizado de Auth0 (usa tu namespace real)
+    private JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter() {
+        JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
+        converter.setAuthorityPrefix("ROLE_");
+        converter.setAuthoritiesClaimName("https://egresados.ues.sv/claims/roles"); // Aquí va tu namespace con /roles
+        return converter;
+    }
+
     @Bean
     public JwtDecoder jwtDecoder(OAuth2ResourceServerProperties properties) {
         NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder)
@@ -73,7 +82,6 @@ public class SecurityConfig {
         );
 
         jwtDecoder.setJwtValidator(withClockSkew);
-
         return jwtDecoder;
     }
 
