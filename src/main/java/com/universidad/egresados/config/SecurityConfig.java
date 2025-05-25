@@ -7,17 +7,25 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -31,20 +39,18 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/auth/**", "/perfil", "/registro", "/contacto",
-                        "/css/**", "/js/**", "/img/**", "/public/**", "/login").permitAll()
+                .requestMatchers("/", "/auth/**", "/registro", "/contacto", "/css/**", "/js/**", "/img/**", "/public/**", "/login").permitAll()
 
-                // Cambiados a MAYÚSCULAS
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/empresa/**").hasRole("EMPRESA")
-                .requestMatchers("/egresado/**").hasRole("EGRESADO")
+                // Acceso para ADMIN, EMPRESA y EGRESADO al perfil
+                .requestMatchers("/perfil").hasAnyRole("ADMIN", "EMPRESA", "EGRESADO")
 
-                // Solo admin o empresa pueden crear/editar/eliminar
+                // Rutas para ADMIN y EMPRESA para crear, editar, eliminar ofertas
                 .requestMatchers("/ofertas/crear", "/ofertas/editar/**", "/ofertas/eliminar/**")
                     .hasAnyRole("ADMIN", "EMPRESA")
 
-                // Egresado solo puede ver o aplicar
-                .requestMatchers("/ofertas/ver/**", "/ofertas/aplicar/**").hasRole("EGRESADO")
+                // Rutas para ADMIN, EMPRESA y EGRESADO para ver y aplicar ofertas
+                .requestMatchers("/ofertas", "/ofertas/aplicar/**")
+                    .hasAnyRole("ADMIN", "EMPRESA", "EGRESADO")
 
                 .anyRequest().authenticated()
             )
@@ -52,7 +58,7 @@ public class SecurityConfig {
                 .loginPage("/login")
                 .defaultSuccessUrl("/perfil", true)
                 .userInfoEndpoint(userInfo -> userInfo
-                    .oidcUserService(new OidcUserService())
+                    .oidcUserService(customOidcUserService()) // Custom para convertir roles en authorities
                 )
             )
             .oauth2ResourceServer(oauth2 -> oauth2
@@ -62,7 +68,7 @@ public class SecurityConfig {
                 )
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("https://dev-6v1unrgk3o6a56fo.us.auth0.com/v2/logout?client_id=0NARD1y0LJkjHhKZ80oYIWl6FOBH8GcA&returnTo=https://sistema-de-egresados.onrender.com/login")
+                .logoutSuccessUrl("https://dev-6v1unrgk3o6a56fo.us.auth0.com/v2/logout?client_id=0NARD1y0LJkjHhKZ80oYIWl6FOBH8GcA&returnTo=http://localhost:8080/login")
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
@@ -72,14 +78,19 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Usa el namespace real y roles en mayúsculas
+    /**
+     * Extrae los roles personalizados del claim del namespace y los convierte en authorities con prefijo ROLE_
+     */
     private JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
-        converter.setAuthorityPrefix("ROLE_"); // ROLE_ADMIN, ROLE_EMPRESA...
+        converter.setAuthorityPrefix("ROLE_");
         converter.setAuthoritiesClaimName("https://egresados.ues.sv/claims/roles");
         return converter;
     }
 
+    /**
+     * Configura el decodificador JWT con una tolerancia de reloj
+     */
     @Bean
     public JwtDecoder jwtDecoder(OAuth2ResourceServerProperties properties) {
         NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder)
@@ -91,6 +102,30 @@ public class SecurityConfig {
 
         jwtDecoder.setJwtValidator(withClockSkew);
         return jwtDecoder;
+    }
+
+    /**
+     * Convierte los roles del claim personalizado también para login con oauth2Login
+     */
+    private OidcUserService customOidcUserService() {
+        OidcUserService delegate = new OidcUserService();
+
+        return new OidcUserService() {
+            @Override
+            public OidcUser loadUser(OidcUserRequest userRequest) {
+                OidcUser oidcUser = delegate.loadUser(userRequest);
+                Collection<GrantedAuthority> mappedAuthorities = new ArrayList<>(oidcUser.getAuthorities());
+
+                Object rolesClaim = oidcUser.getClaims().get("https://egresados.ues.sv/claims/roles");
+                if (rolesClaim instanceof List<?> roles) {
+                    for (Object role : roles) {
+                        mappedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + role.toString()));
+                    }
+                }
+
+                return new DefaultOidcUser(mappedAuthorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
+            }
+        };
     }
 
     @Bean

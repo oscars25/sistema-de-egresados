@@ -5,6 +5,8 @@ import com.universidad.egresados.model.AplicacionOferta;
 import com.universidad.egresados.service.OfertaEmpleoService;
 import com.universidad.egresados.service.AplicacionOfertaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
@@ -27,20 +29,34 @@ public class OfertaEmpleoController {
     private AplicacionOfertaService aplicacionService;
 
     @GetMapping
-    public String listarOfertas(Model model, @AuthenticationPrincipal OidcUser principal) {
+    public String listarOfertas(Model model, 
+                               @AuthenticationPrincipal OidcUser principal, 
+                               Authentication authentication) {
         List<OfertaEmpleo> ofertas = service.listarTodas();
         model.addAttribute("ofertas", ofertas);
 
-        List<String> roles = principal.getClaimAsStringList("roles");
-        model.addAttribute("esEmpresaOAdmin", roles != null && (roles.contains("admin") || roles.contains("Empresa")));
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::toLowerCase)
+                .toList();
+
+        boolean esEmpresaOAdmin = roles.contains("role_admin") || roles.contains("role_empresa");
+        boolean esEgresado = roles.contains("role_egresado");
+
+        model.addAttribute("esEmpresaOAdmin", esEmpresaOAdmin);
+        model.addAttribute("esEgresado", esEgresado);
 
         return "lista";
     }
 
     @GetMapping("/crear")
-    public String mostrarFormularioCrear(@AuthenticationPrincipal OidcUser principal, Model model) {
-        List<String> roles = principal.getClaimAsStringList("roles");
-        if (roles != null && (roles.contains("admin") || roles.contains("Empresa"))) {
+    public String mostrarFormularioCrear(Authentication authentication, Model model) {
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::toLowerCase)
+                .toList();
+
+        if (roles.contains("role_admin") || roles.contains("role_empresa")) {
             model.addAttribute("oferta", new OfertaEmpleo());
             return "formulario";
         }
@@ -48,15 +64,19 @@ public class OfertaEmpleoController {
     }
 
     @PostMapping("/guardar")
-    public String guardarOferta(@AuthenticationPrincipal OidcUser principal,
-                                 @RequestParam(required = false) Long id,
-                                 @RequestParam String descripcion,
-                                 @RequestParam String requisitos,
-                                 @RequestParam String fechaPublicacion,
-                                 @RequestParam String estado) {
+    public String guardarOferta(Authentication authentication,
+                               @RequestParam(required = false) Long id,
+                               @RequestParam String descripcion,
+                               @RequestParam String requisitos,
+                               @RequestParam String fechaPublicacion,
+                               @RequestParam String estado) {
 
-        List<String> roles = principal.getClaimAsStringList("roles");
-        if (roles == null || (!roles.contains("admin") && !roles.contains("Empresa"))) {
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::toLowerCase)
+                .toList();
+
+        if (!roles.contains("role_admin") && !roles.contains("role_empresa")) {
             return "redirect:/acceso-denegado";
         }
 
@@ -77,9 +97,13 @@ public class OfertaEmpleoController {
     }
 
     @GetMapping("/editar/{id}")
-    public String mostrarFormularioEditar(@PathVariable Long id, Model model, @AuthenticationPrincipal OidcUser principal) {
-        List<String> roles = principal.getClaimAsStringList("roles");
-        if (roles == null || (!roles.contains("admin") && !roles.contains("Empresa"))) {
+    public String mostrarFormularioEditar(@PathVariable Long id, Model model, Authentication authentication) {
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::toLowerCase)
+                .toList();
+
+        if (!roles.contains("role_admin") && !roles.contains("role_empresa")) {
             return "redirect:/acceso-denegado";
         }
 
@@ -93,9 +117,13 @@ public class OfertaEmpleoController {
     }
 
     @GetMapping("/eliminar/{id}")
-    public String eliminarOferta(@PathVariable Long id, @AuthenticationPrincipal OidcUser principal) {
-        List<String> roles = principal.getClaimAsStringList("roles");
-        if (roles == null || (!roles.contains("admin") && !roles.contains("Empresa"))) {
+    public String eliminarOferta(@PathVariable Long id, Authentication authentication) {
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::toLowerCase)
+                .toList();
+
+        if (!roles.contains("role_admin") && !roles.contains("role_empresa")) {
             return "redirect:/acceso-denegado";
         }
 
@@ -104,14 +132,14 @@ public class OfertaEmpleoController {
     }
 
     @GetMapping("/ver/{id}")
-    public String verOferta(@PathVariable Long id, Model model, @AuthenticationPrincipal OidcUser principal) {
+    public String verOferta(@PathVariable Long id, Model model) {
         Optional<OfertaEmpleo> ofertaOpt = service.obtenerPorId(id);
         if (!ofertaOpt.isPresent()) {
             return "redirect:/ofertas";
         }
 
         model.addAttribute("oferta", ofertaOpt.get());
-        return "formulario_aplicar";  // Vista con detalles + botón "Aplicar"
+        return "formulario_aplicar";  // Vista para egresados con botón "Aplicar"
     }
 
     @PostMapping("/aplicar/{id}")
@@ -130,5 +158,3 @@ public class OfertaEmpleoController {
         return "redirect:/ofertas";
     }
 }
-
-
