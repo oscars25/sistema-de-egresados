@@ -33,11 +33,19 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/auth/**", "/perfil", "/registro", "/contacto",
                         "/css/**", "/js/**", "/img/**", "/public/**", "/login").permitAll()
-                .requestMatchers("/admin/**").hasRole("admin")
-                .requestMatchers("/empresa/**").hasRole("Empresa")
-                .requestMatchers("/egresado/**").hasRole("Egresado")
-                .requestMatchers("/ofertas/crear", "/ofertas/editar/**", "/ofertas/eliminar/**").hasAnyRole("admin", "Empresa")
-                .requestMatchers("/ofertas/ver/**", "/ofertas/aplicar/**").hasRole("Egresado")
+
+                // Cambiados a MAYÚSCULAS
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/empresa/**").hasRole("EMPRESA")
+                .requestMatchers("/egresado/**").hasRole("EGRESADO")
+
+                // Solo admin o empresa pueden crear/editar/eliminar
+                .requestMatchers("/ofertas/crear", "/ofertas/editar/**", "/ofertas/eliminar/**")
+                    .hasAnyRole("ADMIN", "EMPRESA")
+
+                // Egresado solo puede ver o aplicar
+                .requestMatchers("/ofertas/ver/**", "/ofertas/aplicar/**").hasRole("EGRESADO")
+
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
@@ -64,11 +72,11 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Mapea los roles desde el claim personalizado de Auth0 (usa tu namespace real)
+    // Usa el namespace real y roles en mayúsculas
     private JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
-        converter.setAuthorityPrefix("ROLE_");
-        converter.setAuthoritiesClaimName("https://egresados.ues.sv/claims/roles"); // Aquí va tu namespace con /roles
+        converter.setAuthorityPrefix("ROLE_"); // ROLE_ADMIN, ROLE_EMPRESA...
+        converter.setAuthoritiesClaimName("https://egresados.ues.sv/claims/roles");
         return converter;
     }
 
