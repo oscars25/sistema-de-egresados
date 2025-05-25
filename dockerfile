@@ -1,14 +1,13 @@
-# Usamos una imagen oficial de OpenJDK para construir y correr la app
-FROM openjdk:17-jdk-slim
-
-# Directorio de trabajo dentro del contenedor
+# Stage 1: Build con Maven
+FROM maven:3.8.6-openjdk-17 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Copiamos el archivo jar generado por Maven
-COPY target/egresados-0.0.1-SNAPSHOT.jar app.jar
-
-# Exponemos el puerto en el que corre la app
+# Stage 2: Runtime
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=build /app/target/egresados-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
-
-# Comando para ejecutar la app
 ENTRYPOINT ["java", "-jar", "app.jar"]
