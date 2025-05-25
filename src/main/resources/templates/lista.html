@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Ofertas de Empleo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
 </head>
 <body>
 <!-- NAVBAR -->
 <nav class="navbar">
     <div class="navbar-container">
         <div class="navbar-logo d-flex align-items-center">
-            <img src="/img/logoues.png" alt="Logo UES" class="logo-img me-2">
+            <img src="/img/logoues.png" alt="Logo UES" class="logo-img me-2" />
             <span>Portal de Egresados UES</span>
         </div>
         <ul class="navbar-links">
@@ -38,61 +38,63 @@
         <div class="table-responsive">
             <table class="table table-bordered table-hover align-middle shadow-sm rounded">
                 <thead class="table-primary text-center">
-                <tr>
-                    <th>Descripción</th>
-                    <th>Requisitos</th>
-                    <th>Fecha de Publicación</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
+                    <tr>
+                        <th>Descripción</th>
+                        <th>Requisitos</th>
+                        <th>Fecha de Publicación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr th:each="oferta : ${ofertas}" class="text-center">
-                    <td th:text="${oferta.descripcion}"></td>
-                    <td th:text="${oferta.requisitos}"></td>
-                    <td th:text="${oferta.fechaPublicacion}"></td>
-                    <td>
-                        <span th:text="${oferta.estado}"
-                              th:classappend="${oferta.estado == 'Abierta'} ? 'badge bg-success' : 'badge bg-secondary'">
-                        </span>
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-center gap-2">
-                            <!-- Acciones para Empresa o Admin -->
-                            <a th:if="${esEmpresaOAdmin}"
-                               th:href="@{/ofertas/editar/{id}(id=${oferta.id})}"
-                               class="btn btn-warning btn-sm">
-                                ✏️ Editar
-                            </a>
-                            <a th:if="${esEmpresaOAdmin}"
-                               th:href="@{/ofertas/eliminar/{id}(id=${oferta.id})}"
-                               class="btn btn-danger btn-sm"
-                               onclick="return confirm('¿Eliminar esta oferta?')">
-                                🗑️ Eliminar
-                            </a>
+                    <tr th:each="oferta : ${ofertas}" class="text-center">
+                        <td th:text="${oferta.descripcion}"></td>
+                        <td th:text="${oferta.requisitos}"></td>
+                        <td th:text="${oferta.fechaPublicacion}"></td>
+                        <td>
+                            <span th:text="${oferta.estado}"
+                                  th:classappend="${oferta.estado == 'Abierta'} ? 'badge bg-success' : 'badge bg-secondary'">
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <!-- Para admin o empresa: editar y eliminar -->
+                                <a th:if="${esEmpresaOAdmin}"
+                                   th:href="@{/ofertas/editar/{id}(id=${oferta.id})}"
+                                   class="btn btn-warning btn-sm">
+                                    ✏️ Editar
+                                </a>
+                                <a th:if="${esEmpresaOAdmin}"
+                                   th:href="@{/ofertas/eliminar/{id}(id=${oferta.id})}"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('¿Eliminar esta oferta?')">
+                                    🗑️ Eliminar
+                                </a>
 
-                            <!-- Acciones para Egresado -->
-                            <a th:if="${!esEmpresaOAdmin}"
-                               th:href="@{/ofertas/ver/{id}(id=${oferta.id})}"
-                               class="btn btn-info btn-sm">
-                                👁️ Ver
-                            </a>
-                            <form th:if="${!esEmpresaOAdmin}"
-                                  th:action="@{/ofertas/aplicar/{id}(id=${oferta.id})}"
-                                  method="post" class="d-inline">
-                                <button type="submit" class="btn btn-primary btn-sm">
-                                    📤 Aplicar
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
+                                <!-- Para egresados: ver y aplicar -->
+                                <a th:if="${!esEmpresaOAdmin}"
+                                   th:href="@{/ofertas/ver/{id}(id=${oferta.id})}"
+                                   class="btn btn-info btn-sm">
+                                    👁️ Ver
+                                </a>
+                                <form th:if="${!esEmpresaOAdmin}"
+                                      th:action="@{/ofertas/aplicar/{id}(id=${oferta.id})}"
+                                      method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-primary btn-sm" 
+                                            th:disabled="${oferta.estado != 'Abierta'}" 
+                                            th:title="${oferta.estado != 'Abierta'} ? 'No puede aplicar porque la oferta está cerrada' : ''">
+                                        📤 Aplicar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="text-center mt-3">
-            <a href="/perfil" class="text-decoration-none text-primary fw-semibold">
+            <a th:href="@{/perfil}" class="text-decoration-none text-primary fw-semibold">
                 ⬅ Volver al inicio
             </a>
         </div>
@@ -105,8 +107,8 @@
         <p class="mb-1">Universidad de El Salvador - Portal de Egresados</p>
         <p class="mb-1">© 2025 Todos los derechos reservados</p>
         <p class="mb-0">
-            <a href="/privacidad" class="text-white-50 me-3">Política de privacidad</a>
-            <a href="/contacto" class="text-white-50">Contacto</a>
+            <a th:href="@{/privacidad}" class="text-white-50 me-3">Política de privacidad</a>
+            <a th:href="@{/contacto}" class="text-white-50">Contacto</a>
         </p>
     </div>
 </footer>
