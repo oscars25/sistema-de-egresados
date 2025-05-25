@@ -32,9 +32,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/auth/**", "/perfil", "/registro", "/contacto",
                         "/css/**", "/js/**", "/img/**", "/public/**", "/login").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/empresa/**").hasRole("EMPRESA")
-                .requestMatchers("/egresado/**").hasRole("EGRESADO")
+                .requestMatchers("/admin/**").hasAuthority("admin")
+                .requestMatchers("/empresa/**").hasAuthority("Empresa")
+                .requestMatchers("/egresado/**").hasAuthority("Egresado")
+                .requestMatchers("/ofertas/crear", "/ofertas/editar/**", "/ofertas/eliminar/**").hasAnyAuthority("admin", "Empresa")
+                .requestMatchers("/ofertas/ver/**", "/ofertas/aplicar/**").hasAuthority("Egresado")
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
