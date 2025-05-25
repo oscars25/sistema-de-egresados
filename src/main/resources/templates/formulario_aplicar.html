@@ -43,7 +43,11 @@
                 <p><strong>Estado:</strong></p>
                 <p th:text="${oferta.estado}"></p>
 
-                <form th:action="@{/ofertas/aplicar/{id}(id=${oferta.id})}" method="post" class="mt-4">
+                <!-- Mostrar botón solo si el usuario NO es Empresa ni Admin -->
+                <form th:if="${!esEmpresaOAdmin}" 
+                      th:action="@{/ofertas/aplicar/{id}(id=${oferta.id})}" 
+                      method="post" 
+                      class="mt-4">
                     <button type="submit" class="btn btn-success w-100">Aplicar a esta oferta</button>
                 </form>
             </div>

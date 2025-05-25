@@ -27,43 +27,40 @@ public class OfertaEmpleoController {
     private AplicacionOfertaService aplicacionService;
 
     @GetMapping
-    public String listarOfertas(Model model) {
+    public String listarOfertas(Model model, @AuthenticationPrincipal OidcUser principal) {
         List<OfertaEmpleo> ofertas = service.listarTodas();
         model.addAttribute("ofertas", ofertas);
+
+        List<String> roles = principal.getClaimAsStringList("roles");
+        model.addAttribute("esEmpresaOAdmin", roles != null && (roles.contains("admin") || roles.contains("Empresa")));
+
         return "lista";
     }
 
     @GetMapping("/crear")
     public String mostrarFormularioCrear(@AuthenticationPrincipal OidcUser principal, Model model) {
         List<String> roles = principal.getClaimAsStringList("roles");
-
-        model.addAttribute("oferta", new OfertaEmpleo());
-
         if (roles != null && (roles.contains("admin") || roles.contains("Empresa"))) {
+            model.addAttribute("oferta", new OfertaEmpleo());
             return "formulario";
-        } else if (roles != null && roles.contains("Egresado")) {
-            return "formulario-estudiante";
-        } else {
-            return "redirect:/acceso-denegado";
         }
+        return "redirect:/acceso-denegado";
     }
 
     @PostMapping("/guardar")
-    public String guardarOferta(
-            @AuthenticationPrincipal OidcUser principal,
-            @RequestParam(required = false) Long id,
-            @RequestParam String descripcion,
-            @RequestParam String requisitos,
-            @RequestParam String fechaPublicacion,
-            @RequestParam String estado
-    ) {
+    public String guardarOferta(@AuthenticationPrincipal OidcUser principal,
+                                 @RequestParam(required = false) Long id,
+                                 @RequestParam String descripcion,
+                                 @RequestParam String requisitos,
+                                 @RequestParam String fechaPublicacion,
+                                 @RequestParam String estado) {
+
         List<String> roles = principal.getClaimAsStringList("roles");
         if (roles == null || (!roles.contains("admin") && !roles.contains("Empresa"))) {
             return "redirect:/acceso-denegado";
         }
 
         OfertaEmpleo oferta = (id != null) ? service.obtenerPorId(id).orElse(new OfertaEmpleo()) : new OfertaEmpleo();
-
         oferta.setDescripcion(descripcion);
         oferta.setRequisitos(requisitos);
 
@@ -76,7 +73,6 @@ public class OfertaEmpleoController {
 
         oferta.setEstado(estado);
         service.guardar(oferta);
-
         return "redirect:/ofertas";
     }
 
@@ -107,7 +103,6 @@ public class OfertaEmpleoController {
         return "redirect:/ofertas";
     }
 
-    // ✅ Mostrar detalles para aplicar
     @GetMapping("/ver/{id}")
     public String verOferta(@PathVariable Long id, Model model, @AuthenticationPrincipal OidcUser principal) {
         Optional<OfertaEmpleo> ofertaOpt = service.obtenerPorId(id);
@@ -119,7 +114,6 @@ public class OfertaEmpleoController {
         return "formulario-estudiante";
     }
 
-    // ✅ Aplicar a una oferta
     @PostMapping("/aplicar/{id}")
     public String aplicarOferta(@PathVariable Long id, @AuthenticationPrincipal OidcUser principal) {
         Optional<OfertaEmpleo> ofertaOpt = service.obtenerPorId(id);
@@ -128,12 +122,11 @@ public class OfertaEmpleoController {
         }
 
         AplicacionOferta aplicacion = new AplicacionOferta();
-        aplicacion.setOfertaEmpleo(ofertaOpt.get());  // Cambiado para coincidir con el setter en la entidad
-        aplicacion.setEmailEgresado(principal.getClaim("email"));  // Cambiado para obtener email correctamente
+        aplicacion.setOfertaEmpleo(ofertaOpt.get());
+        aplicacion.setEmailEgresado(principal.getClaim("email"));
         aplicacion.setFechaAplicacion(LocalDate.now());
 
         aplicacionService.guardar(aplicacion);
-
         return "redirect:/ofertas";
     }
 }
