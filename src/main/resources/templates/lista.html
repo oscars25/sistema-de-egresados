@@ -58,7 +58,7 @@
                     </td>
                     <td>
                         <div class="d-flex justify-content-center gap-2">
-                            <!-- Solo para Empresa o Admin -->
+                            <!-- Acciones para Empresa o Admin -->
                             <a th:if="${esEmpresaOAdmin}"
                                th:href="@{/ofertas/editar/{id}(id=${oferta.id})}"
                                class="btn btn-warning btn-sm">
@@ -71,12 +71,19 @@
                                 🗑️ Eliminar
                             </a>
 
-                            <!-- Solo para egresados -->
+                            <!-- Acciones para Egresado -->
                             <a th:if="${!esEmpresaOAdmin}"
                                th:href="@{/ofertas/ver/{id}(id=${oferta.id})}"
                                class="btn btn-info btn-sm">
                                 👁️ Ver
                             </a>
+                            <form th:if="${!esEmpresaOAdmin}"
+                                  th:action="@{/ofertas/aplicar/{id}(id=${oferta.id})}"
+                                  method="post" class="d-inline">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    📤 Aplicar
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>

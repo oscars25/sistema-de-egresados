@@ -111,7 +111,7 @@ public class OfertaEmpleoController {
         }
 
         model.addAttribute("oferta", ofertaOpt.get());
-        return "formulario-estudiante";
+        return "formulario_aplicar";  // Vista con detalles + botón "Aplicar"
     }
 
     @PostMapping("/aplicar/{id}")
