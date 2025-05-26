@@ -37,8 +37,9 @@
             <div class="col-md-8">
                 <h3 th:text="${usuario}" class="text-primary"></h3>
                 <p><strong>Correo Electrónico:</strong> <span th:text="${email}"></span></p>
-                <p><strong>Roles:</strong> 
-                    <span th:each="rol : ${roles}" th:text="${rol} + ' '"></span>
+                <p><strong>Tu rol es:</strong> 
+                    <span th:if="${#authorization.expression('hasRole(''ADMIN'')')}">ADMIN</span>>
+                    <span th:if="${#authorization.expression('hasRole(''EMPRESA'')')}">EMPRESA</span>
                 </p>
             </div>
         </div>
