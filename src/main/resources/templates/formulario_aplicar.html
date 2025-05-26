@@ -16,7 +16,6 @@
             </div>
             <ul class="navbar-links">
                 <li><a th:href="@{/perfil}">Inicio</a></li>
-                <li><a th:href="@{/ofertas}">Lista de ofertas</a></li>
                 <li><a href="#">Acerca del sitio</a></li>
                 <li><a th:href="@{/contacto}">Contacto</a></li>
             </ul>
@@ -44,17 +43,35 @@
                 <p th:text="${oferta.estado}"></p>
 
                 <!-- Mostrar botón solo si el usuario NO es Empresa ni Admin -->
-                <form th:if="${!esEmpresaOAdmin}" 
-                      th:action="@{/ofertas/aplicar/{id}(id=${oferta.id})}" 
-                      method="post" 
-                      class="mt-4">
-                    <button type="submit" class="btn btn-success w-100">Aplicar a esta oferta</button>
+                <form th:if="${!esEmpresaOAdmin}" class="mt-4" onsubmit="return false;">
+                    <button type="button" class="btn btn-success w-100" onclick="mostrarModal()">Aplicar a esta oferta</button>
                 </form>
             </div>
 
             <!-- Pie -->
             <div class="login-footer mt-3 text-center">
-                <a th:href="@{/ofertas}">⬅ Volver a la lista</a>
+                <a th:href="@{/perfil}">⬅ Volver a la lista</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para mostrar después de aplicar -->
+    <div class="modal fade" id="ofertaModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Has aplicado a esta oferta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5 id="modalDescripcion" th:text="${oferta.descripcion}"></h5>
+                    <p><strong>Requisitos:</strong> <span id="modalRequisitos" th:text="${oferta.requisitos}"></span></p>
+                    <p><strong>Fecha de Publicación:</strong> <span id="modalFecha" th:text="${#temporals.format(oferta.fechaPublicacion, 'dd/MM/yyyy')}"></span></p>
+                    <p><strong>Estado:</strong> <span id="modalEstado" th:text="${oferta.estado}"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -70,5 +87,14 @@
             </p>
         </div>
     </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function mostrarModal() {
+            const modal = new bootstrap.Modal(document.getElementById('ofertaModal'));
+            modal.show();
+        }
+    </script>
 </body>
 </html>
