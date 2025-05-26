@@ -89,7 +89,7 @@ public class SecurityConfig {
     }
 
     /**
-     * Configura el decodificador JWT con una tolerancia de reloj
+     * Configura el decodificador JWT con una tolerancia de reloj.
      */
     @Bean
     public JwtDecoder jwtDecoder(OAuth2ResourceServerProperties properties) {
