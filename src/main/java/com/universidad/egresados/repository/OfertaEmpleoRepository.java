@@ -6,10 +6,9 @@ import java.util.List;
 
 public interface OfertaEmpleoRepository extends JpaRepository<OfertaEmpleo, Long> {
 
-    List<OfertaEmpleo> findByTituloContainingIgnoreCase(String titulo);
+    List<OfertaEmpleo> findByDescripcionContainingIgnoreCase(String descripcion);
 
-    List<OfertaEmpleo> findByCategoria(String categoria);
+    List<OfertaEmpleo> findByEstado(String estado);
 
-    List<OfertaEmpleo> findByTituloContainingIgnoreCaseAndCategoria(String titulo, String categoria);
-
+    List<OfertaEmpleo> findByDescripcionContainingIgnoreCaseAndEstado(String descripcion, String estado);
 }
