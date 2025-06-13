@@ -32,19 +32,16 @@ public class OfertaEmpleoService {
 
     // Nuevo método para búsqueda filtrada
     public List<OfertaEmpleo> buscarOfertas(String keyword, String estado) {
-    boolean hayKeyword = keyword != null && !keyword.isBlank();
-    boolean hayEstado = estado != null && !estado.isBlank();
+        if ((keyword == null || keyword.isBlank()) && (estado == null || estado.isBlank())) {
+            return listarTodas();
+        } else if ((keyword != null && !keyword.isBlank()) && (estado == null || estado.isBlank())) {
+            return repo.findByDescripcionContainingIgnoreCase(keyword);
+        } else if ((keyword == null || keyword.isBlank()) && (estado != null && !estado.isBlank())) {
+            return repo.findByEstado(estado);
+        } else {
+            return repo.findByDescripcionContainingIgnoreCaseAndEstado(keyword, estado);
+        }
+    }
 
-    if (!hayKeyword && !hayEstado) {
-        return listarTodas();
-    } else if (hayKeyword && !hayEstado) {
-        return repo.findByDescripcionContainingIgnoreCase(keyword);
-    } else if (!hayKeyword && hayEstado) {
-        return repo.findByEstado(estado);
-    } else {
-        return repo.findByDescripcionContainingIgnoreCaseAndEstado(keyword, estado);
-    }
-    
-    }
 }
 
