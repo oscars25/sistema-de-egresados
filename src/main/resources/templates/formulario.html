@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link rel="icon" type="image/png" href="/img/favicon.png" />
     <meta charset="UTF-8" />
     <title>Formulario de Oferta</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" />
@@ -23,8 +24,21 @@
     </div>
 </nav>
 
-<!-- Carusel -->
-<div id="carouselExample" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000" data-bs-pause="false">
+<!-- Header -->
+<div class="container-xxl py-5 bg-dark page-header mb-5">
+    <div class="container my-5 pt-5 pb-4">
+        <h1 class="display-4 text-white mb-3 animated slideInDown">Crear Oferta</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb text-uppercase">
+                <li class="breadcrumb-item"><a th:href="@{/perfil}">Inicio</a></li>
+                <li class="breadcrumb-item text-white active" aria-current="page">Crear Oferta</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Carrusel -->
+<div id="carouselExample" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000" data-bs-pause="false">
   <div class="carousel-inner">
     <div class="carousel-item active">
       <img src="/img/carousel-1.jpg" class="d-block w-100" alt="carousel 1" />
