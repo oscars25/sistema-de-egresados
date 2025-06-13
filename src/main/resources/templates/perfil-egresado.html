@@ -45,26 +45,34 @@
 
         <hr class="my-4" />
 
-        <h2 class="text-success mb-4 text-center">Ofertas de Empleo Disponibles</h2>
-
-        <div th:if="${ofertas != null and #lists.isEmpty(ofertas) == false}">
-            <div class="list-group">
-                <div th:each="oferta : ${ofertas}" class="list-group-item list-group-item-action mb-3 rounded-3 shadow-sm">
-                    <h5 th:text="${oferta.descripcion}"></h5>
-                    <p><strong>Requisitos:</strong> <span th:text="${oferta.requisitos}"></span></p>
-                    <p><strong>Fecha de Publicación:</strong> <span th:text="${oferta.fechaPublicacion}"></span></p>
-                    <p><strong>Estado:</strong> <span th:text="${oferta.estado}"></span></p>
-
-                    <form th:action="@{'/ofertas/aplicar/' + ${oferta.id}}" method="post">
-                            <button type="submit" class="btn btn-primary">Aplicar</button>
-                    </form>
-                </div>
+        <!-- Barra de búsqueda integrada -->
+        <div class="container-fluid bg-primary mb-4 wow fadeIn" data-wow-delay="0.1s" style="padding: 35px;">
+            <div class="container">
+                <form th:action="@{/perfil}" method="get">
+                    <div class="row g-2">
+                        <div class="col-md-10">
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <input type="text" name="keyword" class="form-control border-0" placeholder="Buscar por palabra clave" />
+                                </div>
+                                <div class="col-md-6">
+                                    <select name="categoria" class="form-select border-0">
+                                        <option selected value="">Seleccionar categoría</option>
+                                        <option value="Ingeniería">Ingeniería</option>
+                                        <option value="Salud">Salud</option>
+                                        <option value="Educación">Educación</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-dark border-0 w-100">Buscar</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <div th:if="${ofertas == null or #lists.isEmpty(ofertas)}" class="alert alert-info">
-            No hay ofertas disponibles en este momento.
-        </div>
+        <!-- Fin barra de búsqueda -->
     </div>
 </div>
 

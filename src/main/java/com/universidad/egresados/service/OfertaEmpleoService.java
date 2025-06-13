@@ -29,4 +29,17 @@ public class OfertaEmpleoService {
     public void eliminar(Long id) {
         repo.deleteById(id);
     }
+
+    // Nuevo método para búsqueda filtrada
+    public List<OfertaEmpleo> buscarOfertas(String keyword, String categoria) {
+        if ((keyword == null || keyword.isBlank()) && (categoria == null || categoria.isBlank())) {
+            return listarTodas();
+        } else if ((keyword != null && !keyword.isBlank()) && (categoria == null || categoria.isBlank())) {
+            return repo.findByTituloContainingIgnoreCase(keyword);
+        } else if ((keyword == null || keyword.isBlank()) && (categoria != null && !categoria.isBlank())) {
+            return repo.findByCategoria(categoria);
+        } else {
+            return repo.findByTituloContainingIgnoreCaseAndCategoria(keyword, categoria);
+        }
+    }
 }
