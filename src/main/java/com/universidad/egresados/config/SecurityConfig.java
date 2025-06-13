@@ -39,7 +39,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/auth/**", "/registro", "/contacto", "/css/**", "/js/**", "/img/**", "/public/**", "/login").permitAll()
+                .requestMatchers("/", "/auth/**", "/registro", "/contacto", "/css/**", "/js/**", "/img/**", "/public/**", "/login","/acercade").permitAll()
 
                 // Acceso para ADMIN, EMPRESA y EGRESADO al perfil
                 .requestMatchers("/perfil").hasAnyRole("ADMIN", "EMPRESA", "EGRESADO")
