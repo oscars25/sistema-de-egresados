@@ -4,7 +4,6 @@ import com.universidad.egresados.model.Usuario;
 import com.universidad.egresados.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
 @Service

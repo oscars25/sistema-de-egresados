@@ -90,16 +90,18 @@
                             <th>Requisitos</th>
                             <th>Fecha de Publicación</th>
                             <th>Estado</th>
+                            <th>Empresa</th> <!-- Nueva columna -->
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="oferta : ${ofertas}">
                             <td>
-                                <a th:href="@{/perfil/formulario_aplicar(id=${oferta.id})}" th:text="${oferta.descripcion}">Descripción</a>
+                                <a th:href="@{/ofertas/ver/{id}(id=${oferta.id})}" th:text="${oferta.descripcion}">Descripción</a>
                             </td>
                             <td th:text="${oferta.requisitos}">Requisitos</td>
                             <td th:text="${oferta.fechaPublicacion != null ? #temporals.format(oferta.fechaPublicacion, 'dd/MM/yyyy') : 'Sin fecha'}">Fecha</td>
                             <td th:text="${oferta.estado}">Estado</td>
+                            <td th:text="${oferta.empresa != null ? oferta.empresa : 'Sin empresa'}">Empresa</td>
                         </tr>
                     </tbody>
                 </table>
@@ -168,24 +170,17 @@ document.addEventListener('DOMContentLoaded', function () {
     var mostrarModalError = /*[[${mostrarModalError} ? 'true' : 'false']]*/ 'false';
     mostrarModalError = mostrarModalError === 'true';
 
-    console.log("mostrarModalExito:", mostrarModalExito);
-    console.log("mostrarModalError:", mostrarModalError);
-
     if (mostrarModalExito) {
         var modalExito = new bootstrap.Modal(document.getElementById('modalExito'));
         modalExito.show();
-        console.log("Modal éxito mostrado");
     }
     if (mostrarModalError) {
         var modalError = new bootstrap.Modal(document.getElementById('modalError'));
         modalError.show();
-        console.log("Modal error mostrado");
     }
 });
 /*]]>*/
 </script>
 
-
-</script>
 </body>
 </html>

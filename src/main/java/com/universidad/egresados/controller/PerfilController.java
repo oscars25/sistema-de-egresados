@@ -1,10 +1,8 @@
 package com.universidad.egresados.controller;
-
 import com.universidad.egresados.model.OfertaEmpleo;
+import com.universidad.egresados.model.AplicacionOferta;
 import com.universidad.egresados.service.OfertaEmpleoService;
 import com.universidad.egresados.service.AplicacionOfertaService;
-import com.universidad.egresados.model.AplicacionOferta;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -57,7 +54,6 @@ public class PerfilController {
         model.addAttribute("keyword", keyword != null ? keyword : "");
         model.addAttribute("estado", estado != null ? estado : "");
 
-        // Mostrar modal de éxito si mensajeFlash tiene contenido
         if (mensajeFlash != null && !mensajeFlash.isEmpty()) {
             model.addAttribute("mostrarModalExito", true);
             model.addAttribute("mensajeModal", mensajeFlash);
@@ -65,7 +61,6 @@ public class PerfilController {
             model.addAttribute("mostrarModalExito", false);
         }
 
-        // Mostrar modal de error si errorFlash tiene contenido
         if (errorFlash != null && !errorFlash.isEmpty()) {
             model.addAttribute("mostrarModalError", true);
             model.addAttribute("mensajeModalError", errorFlash);
@@ -148,4 +143,49 @@ public class PerfilController {
             return "redirect:/perfil";
         }
     }
+
+    // --- Método para crear/guardar oferta con correo empresa asignado ---
+@PostMapping("/perfil/ofertas/guardar")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPRESA')")
+public String guardarOferta(@ModelAttribute OfertaEmpleo oferta,
+                            @AuthenticationPrincipal OidcUser principal,
+                            RedirectAttributes redirectAttributes) {
+    try {
+        if (principal == null) {
+            return "redirect:/login";
+        }
+
+        // Depurar claims
+        principal.getClaims().forEach((k, v) -> System.out.println("Claim: " + k + " -> " + v));
+
+        // Intentar obtener email del claim "email"
+        String correoEmpresa = principal.getAttribute("email");
+        System.out.println("Correo empresa desde Auth0: " + correoEmpresa);
+
+        oferta.setCorreoEmpresa(correoEmpresa);
+
+        // Asignar nombre empresa si no viene en el formulario
+        if (oferta.getEmpresa() == null || oferta.getEmpresa().isBlank()) {
+            String empresaNombre = principal.getAttribute("nickname");
+            if (empresaNombre != null) {
+                oferta.setEmpresa(empresaNombre);
+            }
+        }
+
+        if (oferta.getFechaPublicacion() == null) {
+            oferta.setFechaPublicacion(LocalDate.now());
+        }
+
+        ofertaService.guardar(oferta);
+
+        redirectAttributes.addFlashAttribute("mensaje", "Oferta guardada correctamente.");
+        return "redirect:/perfil";
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        redirectAttributes.addFlashAttribute("error", "Error al guardar la oferta: " + e.getMessage());
+        return "redirect:/perfil";
+    }
+}
+
 }

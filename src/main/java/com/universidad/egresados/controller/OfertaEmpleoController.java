@@ -12,7 +12,6 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -30,8 +29,8 @@ public class OfertaEmpleoController {
 
     @GetMapping
     public String listarOfertas(Model model, 
-                                 @AuthenticationPrincipal OidcUser principal, 
-                                 Authentication authentication) {
+                               @AuthenticationPrincipal OidcUser principal, 
+                               Authentication authentication) {
         List<OfertaEmpleo> ofertas = service.listarTodas();
         model.addAttribute("ofertas", ofertas);
 
@@ -62,11 +61,11 @@ public class OfertaEmpleoController {
 
     @PostMapping("/guardar")
     public String guardarOferta(Authentication authentication,
-                                 @RequestParam(required = false) Long id,
-                                 @RequestParam String descripcion,
-                                 @RequestParam String requisitos,
-                                 @RequestParam String fechaPublicacion,
-                                 @RequestParam String estado) {
+                               @RequestParam(required = false) Long id,
+                               @RequestParam String descripcion,
+                               @RequestParam String requisitos,
+                               @RequestParam(required = false) String fechaPublicacion,
+                               @RequestParam String estado) {
 
         List<String> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -81,14 +80,27 @@ public class OfertaEmpleoController {
         oferta.setDescripcion(descripcion);
         oferta.setRequisitos(requisitos);
 
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            oferta.setFechaPublicacion(LocalDate.parse(fechaPublicacion, formatter));
-        } catch (Exception e) {
-            return "redirect:/ofertas/crear";
+        if (fechaPublicacion != null && !fechaPublicacion.isEmpty()) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                oferta.setFechaPublicacion(LocalDate.parse(fechaPublicacion, formatter));
+            } catch (Exception e) {
+                oferta.setFechaPublicacion(LocalDate.now());
+            }
+        } else {
+            oferta.setFechaPublicacion(LocalDate.now());
         }
 
         oferta.setEstado(estado);
+
+        // Obtener datos de empresa y correo desde OidcUser
+        OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
+        String nombreEmpresa = oidcUser.getAttribute("name"); // o "nickname"
+        String correoEmpresa = oidcUser.getAttribute("email"); // correo del usuario autenticado
+
+        oferta.setEmpresa(nombreEmpresa);
+        oferta.setCorreoEmpresa(correoEmpresa);
+
         service.guardar(oferta);
         return "redirect:/ofertas";
     }
@@ -150,15 +162,14 @@ public class OfertaEmpleoController {
 
     @PostMapping("/aplicar/{id}")
     public String aplicarOferta(@PathVariable Long id, 
-                                 @AuthenticationPrincipal OidcUser principal, 
-                                 Authentication authentication,
-                                 Model model) {
+                                @AuthenticationPrincipal OidcUser principal, 
+                                Authentication authentication,
+                                Model model) {
         Optional<OfertaEmpleo> ofertaOpt = service.obtenerPorId(id);
         if (!ofertaOpt.isPresent()) {
             return "redirect:/ofertas";
         }
 
-        // Guardar la aplicación
         AplicacionOferta aplicacion = new AplicacionOferta();
         aplicacion.setOfertaEmpleo(ofertaOpt.get());
         aplicacion.setEmailEgresado(principal.getClaim("email"));
@@ -176,6 +187,7 @@ public class OfertaEmpleoController {
 
         model.addAttribute("esEmpresaOAdmin", roles.contains("role_admin") || roles.contains("role_empresa"));
 
+        model.addAttribute("exito", true); // Para mostrar modal de confirmación
         return "formulario_aplicar";
     }
 }

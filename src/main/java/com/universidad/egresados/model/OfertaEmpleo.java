@@ -15,11 +15,16 @@ public class OfertaEmpleo {
     private String requisitos;
 
     @Column(name = "fecha_publicacion")
-    private LocalDate fechaPublicacion; // Asegura que sea LocalDate
+    private LocalDate fechaPublicacion;
 
     private String estado;
 
+    private String empresa;  // nombre de la empresa
+
+    private String correoEmpresa;  // correo de la empresa
+
     // Getters y Setters
+
     public Long getId() {
         return id;
     }
@@ -48,7 +53,6 @@ public class OfertaEmpleo {
         return fechaPublicacion;
     }
 
-    // Se espera un LocalDate, no un String
     public void setFechaPublicacion(LocalDate fechaPublicacion) {
         this.fechaPublicacion = fechaPublicacion;
     }
@@ -59,5 +63,21 @@ public class OfertaEmpleo {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public String getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(String empresa) {
+        this.empresa = empresa;
+    }
+
+    public String getCorreoEmpresa() {
+        return correoEmpresa;
+    }
+
+    public void setCorreoEmpresa(String correoEmpresa) {
+        this.correoEmpresa = correoEmpresa;
     }
 }

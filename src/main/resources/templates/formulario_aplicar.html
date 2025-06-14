@@ -33,6 +33,19 @@
                 <p><strong>Descripción:</strong></p>
                 <p th:text="${oferta.descripcion}"></p>
 
+              <div class="mb-3">
+  <label class="form-label"><strong>Empresa</strong></label>
+<p class="form-control-plaintext">
+  <span th:text="${oferta.empresa != null ? oferta.empresa : 'Sin empresa'}"></span>
+  <span th:if="${oferta.correoEmpresa != null}">
+    (<a th:href="'mailto:' + ${oferta.correoEmpresa} + '?subject=Interesado en la oferta de empleo&body=Estimados, quisiera enviar mi currículum para la oferta publicada.'" th:text="${oferta.correoEmpresa}"></a>
+)
+  </span>
+</p>
+
+</div>
+
+
                 <p><strong>Requisitos:</strong></p>
                 <p th:text="${oferta.requisitos}"></p>
 
@@ -49,8 +62,6 @@
                 <!-- Mostrar botón solo si el usuario NO es Empresa ni Admin -->
                 <form th:if="${!esEmpresaOAdmin}" th:action="@{/aplicaciones/aplicar/{idOferta}(idOferta=${oferta.id})}" method="post" class="mt-4">
                     <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-
                     <button type="submit" class="btn btn-success w-100">Aplicar a esta oferta</button>
                 </form>
             </div>
@@ -76,19 +87,14 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Modal de confirmación -->
-<div id="modalConfirmacion" th:if="${exito}" class="modal" 
-     style="display:block; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
-  <div style="background:white; padding:20px; margin:15% auto; width:300px; text-align:center; border-radius:10px;">
-    <p>¡Has aplicado correctamente a esta oferta!</p>
-    <button class="btn btn-primary" onclick="document.getElementById('modalConfirmacion').style.display='none'">Cerrar</button>
-  </div>
-</div>
-
+    <!-- Modal de confirmación -->
+    <div id="modalConfirmacion" th:if="${exito}" class="modal" 
+         style="display:block; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
+      <div style="background:white; padding:20px; margin:15% auto; width:300px; text-align:center; border-radius:10px;">
+        <p>¡Has aplicado correctamente a esta oferta!</p>
+        <button class="btn btn-primary" onclick="document.getElementById('modalConfirmacion').style.display='none'">Cerrar</button>
+      </div>
+    </div>
 
 </body>
-
-
-
-
 </html>

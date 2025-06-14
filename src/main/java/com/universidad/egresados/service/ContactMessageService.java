@@ -3,7 +3,6 @@ package com.universidad.egresados.service;
 import com.universidad.egresados.model.ContactMessage;
 import com.universidad.egresados.repository.ContactMessageRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service

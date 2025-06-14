@@ -15,7 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +35,7 @@ public class AplicacionOfertaController {
         model.addAttribute("_csrf", token);
     }
 
+    // Listar todas las aplicaciones - solo para roles admin o empresa
     @GetMapping
     public String listarAplicaciones(Model model, Authentication authentication) {
         List<String> roles = authentication.getAuthorities().stream()
@@ -52,6 +52,7 @@ public class AplicacionOfertaController {
         return "lista_aplicaciones";
     }
 
+    // Listar aplicaciones del egresado autenticado
     @GetMapping("/mis-aplicaciones")
     public String listarAplicacionesEgresado(Model model, @AuthenticationPrincipal OidcUser principal) {
         String email = principal.getClaim("email");
@@ -60,6 +61,7 @@ public class AplicacionOfertaController {
         return "mis_aplicaciones";
     }
 
+    // Eliminar aplicación - solo admin o empresa
     @GetMapping("/eliminar/{id}")
     public String eliminarAplicacion(@PathVariable Long id, Authentication authentication) {
         List<String> roles = authentication.getAuthorities().stream()
@@ -75,6 +77,7 @@ public class AplicacionOfertaController {
         return "redirect:/aplicaciones";
     }
 
+    // Detalle de aplicación con control de permisos
     @GetMapping("/detalle/{id}")
     public String detalleAplicacion(@PathVariable Long id, Model model, Authentication authentication) {
         Optional<AplicacionOferta> aplicacionOpt = aplicacionService.obtenerPorId(id);
@@ -95,24 +98,37 @@ public class AplicacionOfertaController {
         return "detalle_aplicacion";
     }
 
-    // GET: mostrar formulario de aplicación
+    // Mostrar formulario para aplicar a una oferta
     @GetMapping("/aplicar/{idOferta}")
     public String mostrarFormularioAplicar(@PathVariable Long idOferta,
                                            @RequestParam(required = false) String exito,
                                            @RequestParam(required = false) String error,
                                            Model model,
-                                           Authentication authentication) {
+                                           Authentication authentication,
+                                           @AuthenticationPrincipal OidcUser principal) {
 
         Optional<OfertaEmpleo> ofertaOpt = ofertaService.obtenerPorId(idOferta);
         if (ofertaOpt.isEmpty()) {
             return "redirect:/perfil";
         }
 
-        model.addAttribute("oferta", ofertaOpt.get());
-        model.addAttribute("exito", exito != null); // para el modal
+        OfertaEmpleo oferta = ofertaOpt.get();
+        model.addAttribute("oferta", oferta);
+        model.addAttribute("exito", exito != null);
         model.addAttribute("error", error);
 
-        // Añadir variable esEmpresaOAdmin para controlar botón aplicar
+        // Nombre y correo de empresa (con valores por defecto si no existen)
+        String nombreEmpresa = (oferta.getEmpresa() != null && !oferta.getEmpresa().isBlank())
+                ? oferta.getEmpresa()
+                : "Desconocida";
+        model.addAttribute("nombreEmpresa", nombreEmpresa);
+
+        String correoEmpresa = (oferta.getCorreoEmpresa() != null && !oferta.getCorreoEmpresa().isBlank())
+                ? oferta.getCorreoEmpresa()
+                : "No disponible";
+        model.addAttribute("correoEmpresa", correoEmpresa);
+
+        // Roles para controlar funcionalidades
         List<String> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .map(String::toLowerCase)
@@ -120,26 +136,30 @@ public class AplicacionOfertaController {
         boolean esEmpresaOAdmin = roles.contains("role_empresa") || roles.contains("role_admin");
         model.addAttribute("esEmpresaOAdmin", esEmpresaOAdmin);
 
+        // Email usuario autenticado
+        if (principal != null) {
+            String email = principal.getClaim("email");
+            model.addAttribute("emailUsuario", email);
+        }
+
         return "formulario_aplicar";
     }
 
-    // POST: aplicar a la oferta
-@PostMapping("/aplicar/{idOferta}")
-public String aplicarOferta(@PathVariable Long idOferta,
-                            @AuthenticationPrincipal OidcUser principal,
-                            RedirectAttributes redirectAttributes) {
-    String email = principal.getClaim("email");
-    Optional<OfertaEmpleo> ofertaOpt = ofertaService.obtenerPorId(idOferta);
+    // Acción POST para aplicar a una oferta
+    @PostMapping("/aplicar/{idOferta}")
+    public String aplicarOferta(@PathVariable Long idOferta,
+                                @AuthenticationPrincipal OidcUser principal,
+                                RedirectAttributes redirectAttributes) {
+        String email = principal.getClaim("email");
+        Optional<OfertaEmpleo> ofertaOpt = ofertaService.obtenerPorId(idOferta);
 
-    if (ofertaOpt.isPresent()) {
-        aplicacionService.crearAplicacion(email, ofertaOpt.get());
-        redirectAttributes.addFlashAttribute("exitoAplicacion", true); // flash attribute para modal
-    } else {
-        redirectAttributes.addFlashAttribute("errorAplicacion", "Oferta no encontrada");
-    }
+        if (ofertaOpt.isPresent()) {
+            aplicacionService.crearAplicacion(email, ofertaOpt.get());
+            redirectAttributes.addFlashAttribute("exitoAplicacion", true);
+        } else {
+            redirectAttributes.addFlashAttribute("errorAplicacion", "Oferta no encontrada");
+        }
 
-    return "redirect:/perfil";  
+        return "redirect:/perfil";
     }
 }
-
-

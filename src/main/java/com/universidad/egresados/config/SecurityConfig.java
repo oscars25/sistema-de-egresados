@@ -21,7 +21,6 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
