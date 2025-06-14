@@ -1,107 +1,94 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <link rel="icon" type="image/png" href="/img/favicon.png" />
     <meta charset="UTF-8" />
-    <title>Detalles de la Oferta - Portal de Egresados UES</title>
+    <title>Detalles de la Oferta</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="d-flex flex-column min-vh-100">
-
-<!-- NAVBAR -->
-<nav class="navbar">
-    <div class="navbar-container">
-        <div class="navbar-logo d-flex align-items-center">
-            <img src="/img/logoues.png" alt="Logo UES" class="logo-img me-2" />
-            <span>Portal de Egresados UES</span>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo d-flex align-items-center">
+                <img src="/img/logoues.png" alt="Logo UES" class="logo-img me-2" />
+                <span>Portal de Egresados UES</span>
+            </div>
+            <ul class="navbar-links">
+                <li><a th:href="@{/perfil}">Inicio</a></li>
+                <li><a th:href="@{/acercade}">Acerca del sitio</a></li>
+                <li><a th:href="@{/contacto}">Contacto</a></li>
+            </ul>
         </div>
-        <ul class="navbar-links">
-            <li><a th:href="@{/perfil}">Inicio</a></li>
-            <li><a th:href="@{/acercade}">Acerca del sitio</a></li>
-            <li><a th:href="@{/contacto}">Contacto</a></li>
-        </ul>
+    </nav>
+
+    <!-- CONTENIDO -->
+    <div class="container my-auto">
+        <div class="login-container mx-auto" style="max-width: 600px;">
+            <div class="logo-container text-center mb-4">
+                <h2>Detalles de la Oferta</h2>
+            </div>
+
+            <div class="card p-4">
+                <p><strong>Descripción:</strong></p>
+                <p th:text="${oferta.descripcion}"></p>
+
+                <p><strong>Requisitos:</strong></p>
+                <p th:text="${oferta.requisitos}"></p>
+
+                <p><strong>Fecha de Publicación:</strong></p>
+                <p th:text="${#temporals.format(oferta.fechaPublicacion, 'dd/MM/yyyy')}"></p>
+
+                <p><strong>Estado:</strong></p>
+                <p th:text="${oferta.estado}"></p>
+
+                <!-- Mensajes de error o éxito -->
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+
+                <!-- Mostrar botón solo si el usuario NO es Empresa ni Admin -->
+                <form th:if="${!esEmpresaOAdmin}" th:action="@{/aplicaciones/aplicar/{idOferta}(idOferta=${oferta.id})}" method="post" class="mt-4">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+
+                    <button type="submit" class="btn btn-success w-100">Aplicar a esta oferta</button>
+                </form>
+            </div>
+
+            <!-- Pie -->
+            <div class="login-footer mt-3 text-center">
+                <a th:href="@{/perfil}">⬅ Volver a la lista</a>
+            </div>
+        </div>
     </div>
-</nav>
 
-<!-- Carrusel con título (fragmento Thymeleaf) -->
-<div th:replace="fragments/header-carousel :: headerCarousel('Aplicar Oferta', @{/perfil})"></div>
-
-
-<!-- CONTENIDO -->
-<div class="container my-auto">
-    <div class="login-container mx-auto" style="max-width: 600px;">
-        <div class="logo-container text-center mb-4">
-            <h2>Detalles de la Oferta</h2>
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center mt-auto py-3">
+        <div class="container">
+            <p class="mb-1">Universidad de El Salvador - Portal de Egresados</p>
+            <p class="mb-1">© 2025 Todos los derechos reservados</p>
+            <p class="mb-0">
+                <a th:href="@{/privacidad}" class="text-white-50 me-3">Política de privacidad</a>
+                <a th:href="@{/contacto}" class="text-white-50">Contacto</a>
+            </p>
         </div>
+    </footer>
 
-        <div class="card p-4">
-            <p><strong>Descripción:</strong></p>
-            <p th:text="${oferta.descripcion}"></p>
-
-            <p><strong>Requisitos:</strong></p>
-            <p th:text="${oferta.requisitos}"></p>
-
-            <p><strong>Fecha de Publicación:</strong></p>
-            <p th:text="${#temporals.format(oferta.fechaPublicacion, 'dd/MM/yyyy')}"></p>
-
-            <p><strong>Estado:</strong></p>
-            <p th:text="${oferta.estado}"></p>
-
-            <!-- Mostrar botón solo si el usuario NO es Empresa ni Admin -->
-            <form th:if="${!esEmpresaOAdmin}" class="mt-4" onsubmit="return false;">
-                <button type="button" class="btn btn-success w-100" onclick="mostrarModal()">Aplicar a esta oferta</button>
-            </form>
-        </div>
-
-        <!-- Pie -->
-        <div class="login-footer mt-3 text-center">
-            <a th:href="@{/perfil}">⬅ Volver a la lista</a>
-        </div>
-    </div>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Modal de confirmación -->
+<div id="modalConfirmacion" th:if="${exito}" class="modal" 
+     style="display:block; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
+  <div style="background:white; padding:20px; margin:15% auto; width:300px; text-align:center; border-radius:10px;">
+    <p>¡Has aplicado correctamente a esta oferta!</p>
+    <button class="btn btn-primary" onclick="document.getElementById('modalConfirmacion').style.display='none'">Cerrar</button>
+  </div>
 </div>
 
-<!-- Modal para mostrar después de aplicar -->
-<div class="modal fade" id="ofertaModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Has aplicado a esta oferta</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h5 id="modalDescripcion" th:text="${oferta.descripcion}"></h5>
-                <p><strong>Requisitos:</strong> <span id="modalRequisitos" th:text="${oferta.requisitos}"></span></p>
-                <p><strong>Fecha de Publicación:</strong> <span id="modalFecha" th:text="${#temporals.format(oferta.fechaPublicacion, 'dd/MM/yyyy')}"></span></p>
-                <p><strong>Estado:</strong> <span id="modalEstado" th:text="${oferta.estado}"></span></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Footer -->
-<footer class="bg-dark text-white text-center mt-auto py-3">
-    <div class="container">
-        <p class="mb-1">Universidad de El Salvador - Portal de Egresados</p>
-        <p class="mb-1">© 2025 Todos los derechos reservados</p>
-        <p class="mb-0">
-            <a href="/privacidad" class="text-white-50 me-3">Política de privacidad</a>
-            <a href="/contacto" class="text-white-50">Contacto</a>
-        </p>
-    </div>
-</footer>
-
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    function mostrarModal() {
-        const modal = new bootstrap.Modal(document.getElementById('ofertaModal'));
-        modal.show();
-    }
-</script>
 
 </body>
+
+
+
+
 </html>

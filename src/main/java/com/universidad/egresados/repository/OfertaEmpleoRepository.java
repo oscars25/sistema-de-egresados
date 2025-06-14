@@ -6,8 +6,13 @@ import java.util.List;
 
 public interface OfertaEmpleoRepository extends JpaRepository<OfertaEmpleo, Long> {
 
+    // Busca en descripción, ignorando mayúsculas/minúsculas
     List<OfertaEmpleo> findByDescripcionContainingIgnoreCase(String descripcion);
-    List<OfertaEmpleo> findByEstado(String estado);
-    List<OfertaEmpleo> findByDescripcionContainingIgnoreCaseAndEstado(String descripcion, String estado);
+
+    // Busca por estado, ignorando mayúsculas/minúsculas
+    List<OfertaEmpleo> findByEstadoIgnoreCase(String estado);
+
+    // Busca por descripción y estado, ignorando mayúsculas/minúsculas en ambos
+    List<OfertaEmpleo> findByDescripcionContainingIgnoreCaseAndEstadoIgnoreCase(String descripcion, String estado);
 
 }

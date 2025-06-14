@@ -49,7 +49,9 @@ public class SecurityConfig {
                     .hasAnyRole("ADMIN", "EMPRESA")
 
                 // Rutas para ADMIN, EMPRESA y EGRESADO para ver y aplicar ofertas
-                .requestMatchers("/ofertas", "/ofertas/aplicar/**")
+                .requestMatchers("/perfil/formulario_aplicar", "/perfil/formulario_aplicar/**")
+
+
                     .hasAnyRole("ADMIN", "EMPRESA", "EGRESADO")
 
                 .anyRequest().authenticated()
@@ -68,7 +70,7 @@ public class SecurityConfig {
                 )
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("https://dev-6v1unrgk3o6a56fo.us.auth0.com/v2/logout?client_id=0NARD1y0LJkjHhKZ80oYIWl6FOBH8GcA&returnTo=https://sistema-de-egresados.onrender.com/login")
+                .logoutSuccessUrl("https://dev-6v1unrgk3o6a56fo.us.auth0.com/v2/logout?client_id=0NARD1y0LJkjHhKZ80oYIWl6FOBH8GcA&returnTo=http://localhost:8080/login")
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
