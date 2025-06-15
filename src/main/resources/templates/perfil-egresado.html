@@ -45,69 +45,82 @@
 
         <hr class="my-4" />
 
-        <!-- Barra de búsqueda integrada -->
-        <div class="container-fluid bg-primary mb-4 wow fadeIn" data-wow-delay="0.1s" style="padding: 35px;">
-            <div class="container">
-                <form th:action="@{/perfil}" method="get">
-                    <div class="row g-2">
-                        <div class="col-md-10">
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <input type="text" name="keyword" class="form-control border-0" placeholder="Buscar por palabra clave"
-                                    th:value="${keyword}" />
+<!-- Barra de búsqueda mejorada -->
+<div class="container-fluid bg-primary mb-4 wow fadeIn" data-wow-delay="0.1s" style="padding: 35px;">
+    <div class="container">
+        <form th:action="@{/perfil}" method="get">
+            <div class="row g-3 align-items-end">
+                <!-- Campo de palabra clave -->
+                <div class="col-md-5">
+                    <label for="keyword" class="form-label text-white">Palabra clave</label>
+                    <input type="text" id="keyword" name="keyword" class="form-control border-0" 
+                           placeholder="Buscar por palabra clave" th:value="${keyword}">
+                </div>
 
-                                    <select name="estado" class="form-select border-0">   
-                                        <option value="" th:selected="${estado == null or estado == ''}">Seleccionar estado</option>
-                                        <option value="ACTIVA" th:selected="${estado == 'ACTIVA'}">ACTIVA</option>
-                                        <option value="ABIERTA" th:selected="${estado == 'ABIERTA'}">ABIERTA</option>
-                                        <option value="INACTIVA" th:selected="${estado == 'INACTIVA'}">INACTIVA</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-dark border-0 w-100">Buscar</button>
-                        </div>
-                    </div>
-                </form>
+                <!-- Campo de estado -->
+                <div class="col-md-4">
+                    <label for="estado" class="form-label text-white">Estado</label>
+                    <select id="estado" name="estado" class="form-select border-0">
+                        <option value="" th:selected="${estado == null or estado == ''}">Seleccionar estado</option>
+                        <option value="ACTIVA" th:selected="${estado == 'ACTIVA'}">ACTIVA</option>
+                        <option value="ABIERTA" th:selected="${estado == 'ABIERTA'}">ABIERTA</option>
+                        <option value="INACTIVA" th:selected="${estado == 'INACTIVA'}">INACTIVA</option>
+                    </select>
+                </div>
+
+                <!-- Botón de búsqueda -->
+                <div class="col-md-3 d-grid">
+                    <button type="submit" class="btn btn-dark btn-lg">Buscar</button>
+                </div>
             </div>
-        </div>
-        <!-- Fin barra de búsqueda -->
+        </form>
+    </div>
+</div>
 
-        <!-- Aquí empieza la lista de ofertas -->
-        <div class="container mt-4">
-            <h2 class="mb-3">Ofertas de Empleo</h2>
 
-            <div th:if="${ofertas.isEmpty()}">
-                <p>No se encontraron ofertas para los criterios indicados.</p>
-            </div>
+ <!-- Aquí empieza la lista de ofertas -->
+<div class="container mt-4">
+<!-- Título dinámico según búsqueda -->
+<h2 class="mb-3" th:if="${(keyword != null and keyword != '') or (estado != null and estado != '')}">
+    Resultados de la búsqueda
+</h2>
+<h2 class="mb-3" th:if="${(keyword == null or keyword == '') and (estado == null or estado == '')}">
+    Para que aparezcan las ofertas disponibles primero debes realizar una búsqueda
+</h2>
 
-            <div th:if="${!ofertas.isEmpty()}">
-                <table class="table table-striped table-bordered">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Descripción</th>
-                            <th>Requisitos</th>
-                            <th>Fecha de Publicación</th>
-                            <th>Estado</th>
-                            <th>Empresa</th> <!-- Nueva columna -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="oferta : ${ofertas}">
-                            <td>
-                                <a th:href="@{/ofertas/ver/{id}(id=${oferta.id})}" th:text="${oferta.descripcion}">Descripción</a>
-                            </td>
-                            <td th:text="${oferta.requisitos}">Requisitos</td>
-                            <td th:text="${oferta.fechaPublicacion != null ? #temporals.format(oferta.fechaPublicacion, 'dd/MM/yyyy') : 'Sin fecha'}">Fecha</td>
-                            <td th:text="${oferta.estado}">Estado</td>
-                            <td th:text="${oferta.empresa != null ? oferta.empresa : 'Sin empresa'}">Empresa</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <!-- Fin lista de ofertas -->
+
+    <!-- Mostrar mensaje "no se encontraron ofertas" solo si se hizo búsqueda pero no hay resultados -->
+    <div th:if="(${keyword != null and keyword != ''} or (${estado != null and estado != ''})) and ${ofertas.isEmpty()}">
+        <p>No se encontraron ofertas para los criterios indicados.</p>
+    </div>
+
+    <!-- Mostrar tabla solo si se hizo búsqueda y hay ofertas -->
+    <div th:if="(${keyword != null and keyword != ''} or (${estado != null and estado != ''})) and !${ofertas.isEmpty()}">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Descripción</th>
+                    <th>Requisitos</th>
+                    <th>Fecha de Publicación</th>
+                    <th>Estado</th>
+                    <th>Empresa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="oferta : ${ofertas}">
+                    <td>
+                        <a th:href="@{/ofertas/ver/{id}(id=${oferta.id})}" th:text="${oferta.descripcion}">Descripción</a>
+                    </td>
+                    <td th:text="${oferta.requisitos}">Requisitos</td>
+                    <td th:text="${oferta.fechaPublicacion != null ? #temporals.format(oferta.fechaPublicacion, 'dd/MM/yyyy') : 'Sin fecha'}">Fecha</td>
+                    <td th:text="${oferta.estado}">Estado</td>
+                    <td th:text="${oferta.empresa != null ? oferta.empresa : 'Sin empresa'}">Empresa</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- Fin lista de ofertas -->
 
     </div>
 </div>
