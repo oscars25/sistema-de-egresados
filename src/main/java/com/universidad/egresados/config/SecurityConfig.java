@@ -69,7 +69,7 @@ public class SecurityConfig {
                 )
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("https://dev-6v1unrgk3o6a56fo.us.auth0.com/v2/logout?client_id=0NARD1y0LJkjHhKZ80oYIWl6FOBH8GcA&returnTo=http://localhost:8080/login")
+                .logoutSuccessUrl("https://dev-6v1unrgk3o6a56fo.us.auth0.com/v2/logout?client_id=0NARD1y0LJkjHhKZ80oYIWl6FOBH8GcA&returnTo=https://sistema-de-egresados.onrender.com/login")
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
