@@ -2,6 +2,7 @@ package com.universidad.egresados.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "ofertas_empleo")
@@ -18,12 +19,11 @@ public class OfertaEmpleo {
     private LocalDate fechaPublicacion;
 
     private String estado;
+    private String empresa;
+    private String correoEmpresa;
 
-    private String empresa;  // nombre de la empresa
-
-    private String correoEmpresa;  // correo de la empresa
-
-    // Getters y Setters
+    @OneToMany(mappedBy = "ofertaEmpleo")
+    private List<AplicacionOferta> aplicaciones;
 
     public Long getId() {
         return id;
@@ -79,5 +79,13 @@ public class OfertaEmpleo {
 
     public void setCorreoEmpresa(String correoEmpresa) {
         this.correoEmpresa = correoEmpresa;
+    }
+
+    public List<AplicacionOferta> getAplicaciones() {
+        return aplicaciones;
+    }
+
+    public void setAplicaciones(List<AplicacionOferta> aplicaciones) {
+        this.aplicaciones = aplicaciones;
     }
 }

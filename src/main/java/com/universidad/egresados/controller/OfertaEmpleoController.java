@@ -93,10 +93,9 @@ public class OfertaEmpleoController {
 
         oferta.setEstado(estado);
 
-        // Obtener datos de empresa y correo desde OidcUser
         OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
-        String nombreEmpresa = oidcUser.getAttribute("name"); // o "nickname"
-        String correoEmpresa = oidcUser.getAttribute("email"); // correo del usuario autenticado
+        String nombreEmpresa = oidcUser.getAttribute("name");
+        String correoEmpresa = oidcUser.getAttribute("email");
 
         oferta.setEmpresa(nombreEmpresa);
         oferta.setCorreoEmpresa(correoEmpresa);
@@ -150,6 +149,9 @@ public class OfertaEmpleoController {
         OfertaEmpleo oferta = ofertaOpt.get();
         model.addAttribute("oferta", oferta);
 
+        int numeroAplicaciones = service.contarAplicacionesPorOferta(id);
+        model.addAttribute("numeroAplicaciones", numeroAplicaciones);
+
         List<String> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .map(String::toLowerCase)
@@ -180,14 +182,17 @@ public class OfertaEmpleoController {
         OfertaEmpleo oferta = ofertaOpt.get();
         model.addAttribute("oferta", oferta);
 
+        int numeroAplicaciones = service.contarAplicacionesPorOferta(id);
+        model.addAttribute("numeroAplicaciones", numeroAplicaciones);
+
         List<String> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .map(String::toLowerCase)
                 .toList();
 
         model.addAttribute("esEmpresaOAdmin", roles.contains("role_admin") || roles.contains("role_empresa"));
+        model.addAttribute("exito", true);
 
-        model.addAttribute("exito", true); // Para mostrar modal de confirmación
         return "formulario_aplicar";
     }
 }

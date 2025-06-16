@@ -29,28 +29,14 @@ public class OfertaEmpleoService {
         repo.deleteById(id);
     }
 
-    // ----------------------------------
-    // Métodos agregados para búsqueda
-    // ----------------------------------
-
-    /**
-     * Busca ofertas que contengan la palabra clave en descripción o requisitos (ignore case).
-     * Si la palabra clave es null o vacía, devuelve todas las ofertas.
-     */
     public List<OfertaEmpleo> buscarPorPalabraClave(String palabraClave) {
         if (palabraClave == null || palabraClave.trim().isEmpty()) {
             return repo.findAll();
         }
         String keyword = palabraClave.trim().toLowerCase();
-      return repo.findByDescripcionContainingIgnoreCase(keyword);
-
-
+        return repo.findByDescripcionContainingIgnoreCase(keyword);
     }
 
-    /**
-     * Busca ofertas por estado (exacto, ignore case).
-     * Si el estado es null o vacío, devuelve todas las ofertas.
-     */
     public List<OfertaEmpleo> buscarPorEstado(String estado) {
         if (estado == null || estado.trim().isEmpty()) {
             return repo.findAll();
@@ -58,24 +44,22 @@ public class OfertaEmpleoService {
         return repo.findByEstadoIgnoreCase(estado.trim());
     }
 
-    /**
-     * Busca ofertas filtrando por palabra clave y estado.
-     * Si ambos parámetros son nulos o vacíos devuelve todas las ofertas.
-     */
-public List<OfertaEmpleo> buscarPorPalabraClaveYEstado(String palabraClave, String estado) {
-    boolean palabraVacia = (palabraClave == null || palabraClave.trim().isEmpty());
-    boolean estadoVacio = (estado == null || estado.trim().isEmpty());
+    public List<OfertaEmpleo> buscarPorPalabraClaveYEstado(String palabraClave, String estado) {
+        boolean palabraVacia = (palabraClave == null || palabraClave.trim().isEmpty());
+        boolean estadoVacio = (estado == null || estado.trim().isEmpty());
 
-    if (palabraVacia && estadoVacio) {
-        return repo.findAll();
-    } else if (palabraVacia) {
-        return repo.findByEstadoIgnoreCase(estado.trim());
-    } else if (estadoVacio) {
-        return repo.findByDescripcionContainingIgnoreCase(palabraClave.trim());
-    } else {
-        return repo.findByDescripcionContainingIgnoreCaseAndEstadoIgnoreCase(palabraClave.trim(), estado.trim());
+        if (palabraVacia && estadoVacio) {
+            return repo.findAll();
+        } else if (palabraVacia) {
+            return repo.findByEstadoIgnoreCase(estado.trim());
+        } else if (estadoVacio) {
+            return repo.findByDescripcionContainingIgnoreCase(palabraClave.trim());
+        } else {
+            return repo.findByDescripcionContainingIgnoreCaseAndEstadoIgnoreCase(palabraClave.trim(), estado.trim());
+        }
     }
-}
 
-
+    public int contarAplicacionesPorOferta(Long ofertaId) {
+        return repo.countAplicacionesByOfertaId(ofertaId);
+    }
 }

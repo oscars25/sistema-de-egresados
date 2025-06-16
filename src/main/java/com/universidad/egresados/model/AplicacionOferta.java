@@ -1,6 +1,7 @@
 package com.universidad.egresados.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -9,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "aplicaciones_oferta")
@@ -19,7 +21,7 @@ public class AplicacionOferta {
     private Long id;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "oferta_id", nullable = false)
     private OfertaEmpleo ofertaEmpleo;
 
@@ -37,6 +39,7 @@ public class AplicacionOferta {
         this.fechaAplicacion = fechaAplicacion;
     }
 
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -67,5 +70,31 @@ public class AplicacionOferta {
 
     public void setFechaAplicacion(LocalDate fechaAplicacion) {
         this.fechaAplicacion = fechaAplicacion;
+    }
+
+    // Equals y HashCode
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AplicacionOferta that = (AplicacionOferta) o;
+        return Objects.equals(id, that.id) && 
+               Objects.equals(emailEgresado, that.emailEgresado) && 
+               Objects.equals(fechaAplicacion, that.fechaAplicacion);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, emailEgresado, fechaAplicacion);
+    }
+
+    // ToString
+    @Override
+    public String toString() {
+        return "AplicacionOferta{" +
+               "id=" + id +
+               ", emailEgresado='" + emailEgresado + '\'' +
+               ", fechaAplicacion=" + fechaAplicacion +
+               '}';
     }
 }
